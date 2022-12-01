@@ -1,42 +1,100 @@
-import React, { Component, useEffect } from "react";
-import { dijkstra } from "./Dijkstra";
-import "./main-component.css";
+import React, { Component } from "react"
+import { dijkstra } from "./Dijkstra"
+import "./main-component.css"
 
 export class MainComponent extends Component {
   constructor(props) {
-    super(props);
-    this.ctx = null;
-    this.canvasRef = React.createRef();
-    this.positionXRef = React.createRef();
-    this.state = this.initialState();
-    //this.loadRouteDefine();
+    super(props)
+    this.ctx = null
+    this.canvasRef = React.createRef()
+    this.positionXRef = React.createRef()
+    this.state = this.initialState()
   }
 
   loadRouteDefine = () => {
-    let c = this.state.coordenadas;
+    let c = this.state.coordenadas
     for (const property in c) {
-      let valores = String(c[property]).split(",");
-      this.addVertex(valores[0], valores[1], property);
-      console.log(valores[0], valores[1], property);
+      let valores = String(c[property]).split(",")
+      this.addVertex(valores[0], valores[1], property)
+
+      this.options("initialV").map((index, key) => (
+        (key > 0 && property !== index.props.value) && this.addEdge(valores[0], valores[1], String(this.state.coordenadas[index.props.value]).split(",")[0], String(this.state.coordenadas[index.props.value]).split(",")[1], Math.round(Math.sqrt(Math.pow(String(this.state.coordenadas[index.props.value]).split(",")[0] - valores[0], 2) + Math.pow(String(this.state.coordenadas[index.props.value]).split(",")[1] - valores[1], 2))))
+      ))
     }
   };
 
   initialState = (e) => {
     return {
-      aristas: [],
-      coordenadas: e?{}:{
-        valledupar: [40, 60],
-        SantaMarta: [70, 60],
-        Barranquilla: [30, 50],
-        Sincejo: [50, 30],
-        Medellin: [30, 70],
+      aristas: [
+        ["Valledupar", "Barranquilla"],
+        ["Valledupar", "SantaMarta"],
+        ["Valledupar", "Sincelejo"],
+        ["Valledupar", "Medellin"],
+
+        ["Medellin", "Valledupar"],
+        ["Medellin", "Barranquilla"],
+        ["Medellin", "SantaMarta"],
+        ["Medellin", "Sincelejo"],
+
+        ["Sincelejo", "SantaMarta"],
+        ["Sincelejo", "Barranquilla"],
+        ["Sincelejo", "Valledupar"],
+        ["Sincelejo", "Medellin"],
+
+        ["SantaMarta", "Sincelejo"],
+        ["SantaMarta", "Medellin"],
+        ["SantaMarta", "Valledupar"],
+        ["SantaMarta", "Barranquilla"],
+
+        ["Barranquilla", "SantaMarta"],
+        ["Barranquilla", "Sincelejo"],
+        ["Barranquilla", "Medellin"],
+        ["Barranquilla", "Valledupar"],
+      ],
+      coordenadas: e ? {} : {
+        Valledupar: [80, 5],
+        SantaMarta: [50, 95],
+        Barranquilla: [95, 50],
+        Sincelejo: [5, 50],
+        Medellin: [20, 5]
       },
-      grafo: {},
+      grafo: {
+        Valledupar: {
+          SantaMarta: 95,
+          Barranquilla: 47,
+          Sincelejo: 87,
+          Medellin: 60
+        },
+        SantaMarta: {
+          Valledupar: 95,
+          Barranquilla: 64,
+          Sincelejo: 64,
+          Medellin: 95
+        },
+        Barranquilla: {
+          Valledupar: 47,
+          SantaMarta: 64,
+          Sincelejo: 90,
+          Medellin: 87
+        },
+        Sincelejo: {
+          Valledupar: 87,
+          SantaMarta: 64,
+          Barranquilla: 90,
+          Medellin: 47
+        },
+        Medellin: {
+          Valledupar: 60,
+          SantaMarta: 95,
+          Barranquilla: 87,
+          Sincelejo: 47
+        }
+      },
       form: "destinos",
       distance: {},
       ...this.emptyFormsControls(),
       rutaOptima: {},
-    };
+    }
   };
 
   emptyFormsControls() {
@@ -54,57 +112,57 @@ export class MainComponent extends Component {
         partida: "",
         llegada: "",
       },
-    };
+    }
   }
 
   clearFormsControls = () => {
-    this.setState({ ...this.emptyFormsControls() });
+    this.setState({ ...this.emptyFormsControls() })
   };
 
   drawGrid = (size = 600) => {
-    this.ctx.strokeStyle = "#F5F5F5";
+    this.ctx.strokeStyle = "#F5F5F5"
 
-    for (let x = 0; x <= size; x += 6) {
-      this.ctx.moveTo(x, 0);
-      this.ctx.lineTo(x, size);
+    for (let x = 0;x <= size;x += 6) {
+      this.ctx.moveTo(x, 0)
+      this.ctx.lineTo(x, size)
     }
 
-    for (let y = 0; y <= size; y += 6) {
-      this.ctx.moveTo(0, y);
-      this.ctx.lineTo(size, y);
+    for (let y = 0;y <= size;y += 6) {
+      this.ctx.moveTo(0, y)
+      this.ctx.lineTo(size, y)
     }
-    this.ctx.stroke();
+    this.ctx.stroke()
   };
 
   emptyCanvas = (size = 600) => {
-    this.canvasRef.current.width = size;
-    this.drawGrid();
+    this.canvasRef.current.width = size
+    this.drawGrid()
   };
 
   sizeCanvas = (size = 600) => {
-    this.canvasRef.current.width = size;
-    this.canvasRef.current.height = size;
+    this.canvasRef.current.width = size
+    this.canvasRef.current.height = size
   };
 
   setFocusPositionX = () => {
-    this.positionXRef?.current?.focus();
+    this.positionXRef?.current?.focus()
   };
 
   drawVertex = (x, y, r = 7, nameOfVertex, size = 600) => {
-    let escala = Math.round(size / 100);
-    let xPixel = x * escala;
-    let yPixel = y * escala;
+    let escala = Math.round(size / 100)
+    let xPixel = x * escala
+    let yPixel = y * escala
 
     if (this.ctx) {
-      this.ctx.textAlign = "center";
-      this.ctx.font = "10pt Verdana";
-      this.ctx.fillStyle = "#000000";
-      this.ctx.fillText(nameOfVertex, xPixel, size - yPixel + 23);
+      this.ctx.textAlign = "center"
+      this.ctx.font = "10pt Verdana"
+      this.ctx.fillStyle = "#000000"
+      this.ctx.fillText(nameOfVertex, xPixel, size - yPixel + 23)
 
-      this.ctx.fillStyle = "#7030A0";
-      this.ctx.beginPath();
-      this.ctx.arc(xPixel, size - yPixel, r, 0, 2 * Math.PI);
-      this.ctx.fill();
+      this.ctx.fillStyle = "#7030A0"
+      this.ctx.beginPath()
+      this.ctx.arc(xPixel, size - yPixel, r, 0, 2 * Math.PI)
+      this.ctx.fill()
     }
   };
 
@@ -117,40 +175,39 @@ export class MainComponent extends Component {
     size = 600,
     optimalRoute = false
   ) => {
-    debugger
-    let escala = Math.round(size / 100);
-    let x1Pixel = x1 * escala;
-    let y1Pixel = y1 * escala;
-    let x2Pixel = x2 * escala;
-    let y2Pixel = y2 * escala;
-    let xMedioPixel = Math.round(((Number(x1) + Number(x2)) / 2) * escala);
-    let yMedioPixel = Math.round(((Number(y1) + Number(y2)) / 2) * escala);
+    let escala = Math.round(size / 100)
+    let x1Pixel = x1 * escala
+    let y1Pixel = y1 * escala
+    let x2Pixel = x2 * escala
+    let y2Pixel = y2 * escala
+    let xMedioPixel = Math.round(((Number(x1) + Number(x2)) / 2) * escala)
+    let yMedioPixel = Math.round(((Number(y1) + Number(y2)) / 2) * escala)
 
     if (this.ctx) {
       if (optimalRoute) {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "#C00303";
+        this.ctx.beginPath()
+        this.ctx.strokeStyle = "#C00303"
       } else {
-        this.ctx.textAlign = "center";
-        this.ctx.font = "10pt Verdana";
-        this.ctx.fillStyle = "#000000";
-        this.ctx.fillText(weight, xMedioPixel + 15, size - yMedioPixel);
-        this.ctx.strokeStyle = "#7030A0";
+        this.ctx.textAlign = "center"
+        this.ctx.font = "10pt Verdana"
+        this.ctx.fillStyle = "#000000"
+        this.ctx.fillText(weight, xMedioPixel + 15, size - yMedioPixel)
+        this.ctx.strokeStyle = "#7030A0"
       }
 
-      this.ctx.lineWidth = 3;
-      this.ctx.moveTo(x1Pixel, size - y1Pixel);
-      this.ctx.lineTo(x2Pixel, size - y2Pixel);
-      this.ctx.stroke();
+      this.ctx.lineWidth = 3
+      this.ctx.moveTo(x1Pixel, size - y1Pixel)
+      this.ctx.lineTo(x2Pixel, size - y2Pixel)
+      this.ctx.stroke()
     }
   };
 
   showForm = (form) => {
-    this.setState({ form }, () => this.setFocusPositionX());
+    this.setState({ form }, () => this.setFocusPositionX())
   };
 
   clearButtonOnClick = () => {
-    this.setState(this.initialState(true), () => this.emptyCanvas());
+    this.setState(this.initialState(true), () => this.emptyCanvas())
   };
 
   addVertex = (x, y, nameV) => {
@@ -161,14 +218,13 @@ export class MainComponent extends Component {
         ...this.emptyFormsControls(),
       },
       () => {
-        this.drawVertex(x, y, 7, nameV);
-        this.setFocusPositionX();
+        this.drawVertex(x, y, 7, nameV)
+        this.setFocusPositionX()
       }
-    );
+    )
   };
 
   addEdge = (x1, y1, x2, y2, peso, initialV, finalV) => {
-    debugger
     this.setState(
       {
         grafo: {
@@ -190,145 +246,146 @@ export class MainComponent extends Component {
         ...this.emptyFormsControls(),
       },
       () => this.drawEdge(x1, y1, x2, y2, peso)
-    );
+    )
   };
 
   crearVOnClick = () => {
-    const x = parseInt(this.state.destino.x);
-    const y = parseInt(this.state.destino.y);
-    const nameV = this.state.destino.nombre;
-    const coordenadas = this.state.coordenadas;
+    const x = parseInt(this.state.destino.x)
+    const y = parseInt(this.state.destino.y)
+    const nameV = this.state.destino.nombre
+    const coordenadas = this.state.coordenadas
 
     if (
       x >= 0 &&
       y >= 0 &&
       x <= 100 &&
       y <= 100 &&
-      nameV != "" &&
-      x != null &&
-      y != null &&
-      nameV != null
+      nameV !== "" &&
+      x !== null &&
+      y !== null &&
+      nameV !== null
     ) {
-      let existe = false;
-      let queExiste = "";
+      let existe = false
+      let queExiste = ""
 
       if (Object.keys(coordenadas).length > 0) {
         // Valida que las coordenadas no existan ya en el grafo.
         for (const vertice in coordenadas) {
-          for (let i = 0; i < coordenadas[vertice].length; i++) {
-            if (coordenadas[vertice][0] == x && coordenadas[vertice][1] == y) {
-              existe = true;
-              queExiste += `Ya existen las coordenadas (${x},${y}) `;
-              i = coordenadas[vertice].length;
+          for (let i = 0;i < coordenadas[vertice].length;i++) {
+            if (coordenadas[vertice][0] === x && coordenadas[vertice][1] === y) {
+              existe = true
+              queExiste += `Ya existen las coordenadas (${x},${y}) `
+              i = coordenadas[vertice].length
             }
           }
         }
 
         // Valida que el nombre del vertice a ingresar no tenga el mismo nombre que alguno ya almacenado.
         if ([nameV] in this.state.grafo) {
-          existe = true;
-          queExiste += `Ya existe un vertice con el nombre ${nameV}`;
+          existe = true
+          queExiste += `Ya existe un vertice con el nombre ${nameV}`
         }
         if (!existe) {
-          this.addVertex(x, y, nameV);
+          this.addVertex(x, y, nameV)
         } else {
-          alert(queExiste);
+          alert(queExiste)
         }
       } else {
-        this.addVertex(x, y, nameV);
+        this.addVertex(x, y, nameV)
       }
     } else {
-      alert("Por favor introduce datos correctos");
+      alert("Por favor introduce datos correctos")
     }
 
-    this.clearFormsControls();
+    this.clearFormsControls()
   };
 
   crearEOnClick = () => {
-    const initialV = this.state.ruta.inicio;
-    const finalV = this.state.ruta.final;
-    const aristas = this.state.aristas;
-    debugger
-    if (initialV != "" && finalV != "" && initialV != null && finalV != null) {
-      if (initialV != finalV) {
-        let x1 = this.state.coordenadas[initialV][0];
-        let y1 = this.state.coordenadas[initialV][1];
-        let x2 = this.state.coordenadas[finalV][0];
-        let y2 = this.state.coordenadas[finalV][1];
-        let peso = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-        debugger
-        peso = Math.round(peso);
+    const initialV = this.state.ruta.inicio
+    const finalV = this.state.ruta.final
+    const aristas = this.state.aristas
+
+    if (initialV !== "" && finalV !== "" && initialV !== null && finalV !== null) {
+      if (initialV !== finalV) {
+        let x1 = this.state.coordenadas[initialV][0]
+        let y1 = this.state.coordenadas[initialV][1]
+        let x2 = this.state.coordenadas[finalV][0]
+        let y2 = this.state.coordenadas[finalV][1]
+        let peso = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+
+        peso = Math.round(peso)
 
         if (this.state.aristas.length > 0) {
-          let existe = false;
-          let queExiste = `Ya existe una arista desde el vértice ${initialV} hasta el vértice ${finalV}.`;
+          let existe = false
+          let queExiste = `Ya existe una arista desde el vértice ${initialV} hasta el vértice ${finalV}.`
 
-          for (let i = 0; i < this.state.aristas.length; i++) {
+          for (let i = 0;i < this.state.aristas.length;i++) {
             if (
-              (aristas[i][0] == initialV && aristas[i][1] == finalV) ||
-              (aristas[i][0] == finalV && aristas[i][1] == initialV)
+              (aristas[i][0] === initialV && aristas[i][1] === finalV) ||
+              (aristas[i][0] === finalV && aristas[i][1] === initialV)
             ) {
-              existe = true;
-              i = aristas.length;
+              existe = true
+              i = aristas.length
             }
           }
 
           if (!existe) {
-            this.addEdge(x1, y1, x2, y2, peso, initialV, finalV);
+            this.addEdge(x1, y1, x2, y2, peso, initialV, finalV)
           } else {
-            alert(queExiste);
+            alert(queExiste)
           }
         } else {
-          this.addEdge(x1, y1, x2, y2, peso, initialV, finalV);
+          this.addEdge(x1, y1, x2, y2, peso, initialV, finalV)
         }
       } else {
         alert(
           `No se puede conectar ${initialV} con ${finalV}, ya que son los mismos vértices. El sistema no lo acepta.`
-        );
+        )
       }
     } else {
-      alert("Por favor introduce los datos.");
+      alert("Por favor introduce los datos.")
     }
 
-    this.clearFormsControls();
+    this.clearFormsControls()
   };
+
   redrawVertices() {
     for (let nameV in this.state.coordenadas) {
-        let x = this.state.coordenadas[nameV][0]
-        let y = this.state.coordenadas[nameV][1]
-        this.drawVertex(x, y, 7, nameV)
+      let x = this.state.coordenadas[nameV][0]
+      let y = this.state.coordenadas[nameV][1]
+      this.drawVertex(x, y, 7, nameV)
     }
   }
+
   redrawAristas() {
     let aristas = this.state.aristas.filter((v, i, _) => i % 2 === 0)
     for (let arista of aristas) {
-        let x1 = this.state.coordenadas[arista[0]][0]
-        let y1 = this.state.coordenadas[arista[0]][1]
-        let x2 = this.state.coordenadas[arista[1]][0]
-        let y2 = this.state.coordenadas[arista[1]][1]
-        let peso = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
-        peso = Math.round(peso)
-        this.drawEdge(x1, y1, x2, y2, peso)
+      let x1 = this.state.coordenadas[arista[0]][0]
+      let y1 = this.state.coordenadas[arista[0]][1]
+      let x2 = this.state.coordenadas[arista[1]][0]
+      let y2 = this.state.coordenadas[arista[1]][1]
+      let peso = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+      peso = Math.round(peso)
+      this.drawEdge(x1, y1, x2, y2, peso)
     }
   }
-  calcRouteOnClick = () => {
-    const initialV = this.state.calculo.partida;
-    const finalV = this.state.calculo.llegada;
-    const coordenadas = this.state.coordenadas;
 
-    console.log(this.state);
+  calcRouteOnClick = () => {
+    const initialV = this.state.calculo.partida
+    const finalV = this.state.calculo.llegada
+    const coordenadas = this.state.coordenadas
+
     this.emptyCanvas()
     this.redrawVertices()
     this.redrawAristas()
-    if (initialV != "" && finalV != "" && initialV != null && finalV != null) {
-      if (initialV != finalV) {
-        let dks = dijkstra(this.state.grafo, initialV, finalV);
-        let distance = dks["distancia"];
-        let route = dks["ruta"];
 
-        console.log(dks);
+    if (initialV !== "" && finalV !== "" && initialV !== null && finalV !== null) {
+      if (initialV !== finalV) {
+        let dks = dijkstra(this.state.grafo, initialV, finalV)
+        let distance = dks["distancia"]
+        let route = dks["ruta"]
 
-        for (let i = 0; i < route.length; i++) {
+        for (let i = 0;i < route.length;i++) {
           if (i < route.length - 1) {
             this.drawEdge(
               coordenadas[route[i]][0],
@@ -338,43 +395,43 @@ export class MainComponent extends Component {
               null,
               600,
               true
-            );
+            )
 
             this.setState({
               rutaOptima: {
                 distancia: distance,
                 ruta: route,
               },
-            });
+            })
           }
         }
       } else {
-        alert("¡Ya estás en tu destino!");
+        alert("¡Ya estás en tu destino!")
       }
     } else {
-      alert("Por favor introduce los datos.");
+      alert("Por favor introduce los datos.")
     }
 
-    this.clearFormsControls();
+    this.clearFormsControls()
   };
 
   componentDidMount() {
-    this.ctx = this.canvasRef.current.getContext("2d");
-    this.sizeCanvas();
-    this.drawGrid();
-    this.loadRouteDefine();
+    this.ctx = this.canvasRef.current.getContext("2d")
+    this.sizeCanvas()
+    this.drawGrid()
+    this.loadRouteDefine()
   }
 
   options = (prefix) => {
-    let options = [<option key={`${prefix}-empty`}>...</option>];
+    let options = [<option key={`${prefix}-empty`}>...</option>]
     options.push(
       ...Object.keys(this.state.coordenadas).map((x) => (
         <option value={x} key={`${prefix}-${x}`}>
           {x}
         </option>
       ))
-    );
-    return options;
+    )
+    return options
   };
 
   changeValue = (section, field, value) => {
@@ -383,7 +440,7 @@ export class MainComponent extends Component {
         ...this.state[section],
         [field]: value,
       },
-    });
+    })
   };
 
   canvas = () => {
@@ -391,7 +448,7 @@ export class MainComponent extends Component {
       <div className="divMapa">
         <canvas id="mapa" ref={this.canvasRef}></canvas>
       </div>
-    );
+    )
   };
 
   buttons = () => {
@@ -419,7 +476,7 @@ export class MainComponent extends Component {
           Calcular Ruta
         </button>
       </div>
-    );
+    )
   };
 
   buttonClear = () => {
@@ -431,7 +488,7 @@ export class MainComponent extends Component {
       >
         Limpiar
       </button>
-    );
+    )
   };
 
   currentForm = () => {
@@ -489,7 +546,7 @@ export class MainComponent extends Component {
               </button>
             </div>
           </form>
-        );
+        )
 
       case "crear-ruta":
         return (
@@ -525,7 +582,7 @@ export class MainComponent extends Component {
               Crear arista
             </button>
           </form>
-        );
+        )
 
       case "calcular-ruta":
         return (
@@ -569,15 +626,15 @@ export class MainComponent extends Component {
               type="button"
               id="btnDeleteRoute"
               className="btn btn-danger mt-3"
-              onClick={() => {}}
+              onClick={() => { }}
             >
               Borrar ruta
             </button>
           </form>
-        );
+        )
 
       default:
-        return <div></div>;
+        return <div></div>
     }
   };
 
@@ -591,7 +648,7 @@ export class MainComponent extends Component {
           <strong>Ruta:</strong> ({this.state.rutaOptima.ruta.join(", ")})
         </p>
       )
-    );
+    )
   };
 
   render() {
@@ -605,6 +662,6 @@ export class MainComponent extends Component {
         </div>
         {this.canvas()}
       </section>
-    );
+    )
   }
 }
