@@ -292,14 +292,34 @@ export class MainComponent extends Component {
 
     this.clearFormsControls();
   };
-
+  redrawVertices() {
+    for (let nameV in this.state.coordenadas) {
+        let x = this.state.coordenadas[nameV][0]
+        let y = this.state.coordenadas[nameV][1]
+        this.drawVertex(x, y, 7, nameV)
+    }
+  }
+  redrawAristas() {
+    let aristas = this.state.aristas.filter((v, i, _) => i % 2 === 0)
+    for (let arista of aristas) {
+        let x1 = this.state.coordenadas[arista[0]][0]
+        let y1 = this.state.coordenadas[arista[0]][1]
+        let x2 = this.state.coordenadas[arista[1]][0]
+        let y2 = this.state.coordenadas[arista[1]][1]
+        let peso = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
+        peso = Math.round(peso)
+        this.drawEdge(x1, y1, x2, y2, peso)
+    }
+  }
   calcRouteOnClick = () => {
     const initialV = this.state.calculo.partida;
     const finalV = this.state.calculo.llegada;
     const coordenadas = this.state.coordenadas;
 
     console.log(this.state);
-
+    this.emptyCanvas()
+    this.redrawVertices()
+    this.redrawAristas()
     if (initialV != "" && finalV != "" && initialV != null && finalV != null) {
       if (initialV != finalV) {
         let dks = dijkstra(this.state.grafo, initialV, finalV);
