@@ -21,10 +21,10 @@ export class MainComponent extends Component {
     }
   };
 
-  initialState = () => {
+  initialState = (e) => {
     return {
       aristas: [],
-      coordenadas: {
+      coordenadas: e?{}:{
         valledupar: [40, 60],
         SantaMarta: [70, 60],
         Barranquilla: [30, 50],
@@ -117,13 +117,14 @@ export class MainComponent extends Component {
     size = 600,
     optimalRoute = false
   ) => {
+    debugger
     let escala = Math.round(size / 100);
     let x1Pixel = x1 * escala;
     let y1Pixel = y1 * escala;
     let x2Pixel = x2 * escala;
     let y2Pixel = y2 * escala;
-    let xMedioPixel = Math.round(((x1 + x2) / 2) * escala);
-    let yMedioPixel = Math.round(((y1 + y2) / 2) * escala);
+    let xMedioPixel = Math.round(((Number(x1) + Number(x2)) / 2) * escala);
+    let yMedioPixel = Math.round(((Number(y1) + Number(y2)) / 2) * escala);
 
     if (this.ctx) {
       if (optimalRoute) {
@@ -149,7 +150,7 @@ export class MainComponent extends Component {
   };
 
   clearButtonOnClick = () => {
-    this.setState(this.initialState(), () => this.emptyCanvas());
+    this.setState(this.initialState(true), () => this.emptyCanvas());
   };
 
   addVertex = (x, y, nameV) => {
@@ -167,6 +168,7 @@ export class MainComponent extends Component {
   };
 
   addEdge = (x1, y1, x2, y2, peso, initialV, finalV) => {
+    debugger
     this.setState(
       {
         grafo: {
@@ -246,7 +248,7 @@ export class MainComponent extends Component {
     const initialV = this.state.ruta.inicio;
     const finalV = this.state.ruta.final;
     const aristas = this.state.aristas;
-
+    debugger
     if (initialV != "" && finalV != "" && initialV != null && finalV != null) {
       if (initialV != finalV) {
         let x1 = this.state.coordenadas[initialV][0];
@@ -254,6 +256,7 @@ export class MainComponent extends Component {
         let x2 = this.state.coordenadas[finalV][0];
         let y2 = this.state.coordenadas[finalV][1];
         let peso = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        debugger
         peso = Math.round(peso);
 
         if (this.state.aristas.length > 0) {
